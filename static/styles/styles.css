@@ -2,7 +2,7 @@ body{
     background-color: darkgray;
 }
 
-#main-table{
+table{
     margin: auto;
 }
 
@@ -13,6 +13,12 @@ body{
     height: 20px;
 
     transition: background-color 0.1s;
+}
+#main-table .start-cell{
+    background-color: green;
+}
+#main-table .end-cell{
+    background-color: red;
 }
 
 #main-table td:hover{
