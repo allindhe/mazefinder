@@ -1,0 +1,20 @@
+body{
+    background-color: darkgray;
+}
+
+#main-table{
+    margin: auto;
+}
+
+/* Standard unmarked cell */
+#main-table td{
+    background-color: white;
+    width: 20px;
+    height: 20px;
+
+    transition: background-color 0.1s;
+}
+
+#main-table td:hover{
+    background-color: black;
+}
