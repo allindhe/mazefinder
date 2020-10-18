@@ -14,11 +14,14 @@ table{
 
     transition: background-color 0.1s;
 }
-#main-table .start-cell{
+#main-table tr .start-cell{
     background-color: green;
 }
-#main-table .end-cell{
+#main-table tr .end-cell{
     background-color: red;
+}
+#main-table .step-cell{
+    background-color: steelblue;
 }
 
 #main-table td:hover{
