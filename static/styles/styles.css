@@ -23,6 +23,9 @@ table{
 #main-table .step-cell{
     background-color: steelblue;
 }
+#main-table .wall-cell{
+    background-color: dimgrey;
+}
 
 #main-table td:hover{
     background-color: black;

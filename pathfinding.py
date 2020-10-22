@@ -27,9 +27,8 @@ class Cell():
 
 
 class Board():
-    board = []
-
     def __init__(self, rows, columns, walls):
+        self.board = []
         self.rows = rows
         self.columns = columns
 
@@ -41,6 +40,7 @@ class Board():
         
         # Add walls
         for wall in walls:
+            print(self.board[wall[0]][wall[1]].row, self.board[wall[0]][wall[1]].column)
             self.board[wall[0]][wall[1]].isWall = True
 
         # Find neighbors
@@ -106,25 +106,28 @@ def get_stuff(alg_type, data):
     data = json.loads(data)
 
     # Create board
+    print(data)
     board = Board(data["rows"], data["columns"], data["walls"]).get_board()
 
     # Run BFS with board
     (solution, steps) = BFS().BFS(board, data["start-cell"], data["end-cell"])
 
+    print(solution)
+    print(steps)
     return {"solution": solution, "steps": steps}
 
 
 # Debug
 if __name__ == "__main__":
     start_cell = [0, 0]
-    end_cell = [3, 3]
-    rows = 4
-    columns = 4
-    walls = [[1, 2]]
+    end_cell = [29, 29]
+    rows = 30
+    columns = 30
+    walls = [[0, 5], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5]]
 
     board = Board(rows, columns, walls)
     print(board)
 
-    a, b = BFS().BFS(board.board, start_cell, end_cell)
+    a, b = BFS().BFS(board.get_board(), start_cell, end_cell)
     print(a)
     print(b)

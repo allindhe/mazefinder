@@ -1,14 +1,28 @@
-ROWS = 30;
-COLUMNS = 30;
-VISUALIZE_MS = 5;
+let ROWS = 30;
+let COLUMNS = 30;
+let VISUALIZE_MS = 5;
+
+// Keep track on if mouse is down or up
+let isMouseDown = false;
+$(document).mousedown(function() {
+    isMouseDown = true;
+}).mouseup(function() {
+    isMouseDown = false;  
+});
 
 let mainTbody = $("#main-table");
 
-function clearCells(){
-    $("#main-table tr td").removeClass("step-cell")
+// Start stuff
+function clearCells(stepCell=true, wallCell=true){
+    if (stepCell){
+        $("#main-table tr td").removeClass("step-cell")
+    }
+    if (wallCell){
+        $("#main-table tr td").removeClass("wall-cell")
+    }
 }
 function visualizeCells(data) {
-    clearCells();
+    clearCells(stepCell=true, wallCell=false);
 
     timeout = 0;
     
@@ -18,21 +32,21 @@ function visualizeCells(data) {
             mainTbody[0].rows[cell[0]].cells[cell[1]].classList.add("step-cell"); 
         }, timeout);
     });
-
-    
-
 }
 
 function calculateAlgorithm() {
-    data = getTableInfo();
+    let inputData = getTableInfo();
+    let outputData;
+    console.log(inputData)
 
     // Send board to backend and recieve solution
-    $.ajax('/_algorithm?data=' + JSON.stringify(data),
+    $.ajax('/_algorithm?data=' + JSON.stringify(inputData),
     {
         dataType: 'json', // type of response data
         timeout: 500,     // timeout milliseconds
-        success: function (data,status,xhr) {   // success callback function
-            visualizeCells(data);
+        success: function (outputData,status,xhr) {   // success callback function
+            console.log(outputData)
+            visualizeCells(outputData);
         },
         error: function (jqXhr, textStatus, errorMessage) { // error callback 
             $('p').append('Error: ' + errorMessage);
@@ -51,35 +65,50 @@ function getTableInfo(){
         let classes = cell.classList;
         let row = Math.floor(index / ROWS);
         let column = index % COLUMNS;
+        
         if (classes.contains("start-cell")){
-        data["start-cell"] = [row, column];
+            data["start-cell"] = [row, column];
         }
         else if (classes.contains("end-cell")){
-        data["end-cell"] = [row, column];
+            data["end-cell"] = [row, column];
         }
         else if (classes.contains("wall-cell")){
-        data["walls"].append([row, column]);
+            data["walls"].push([row, column]);
         }
     });
 
     return data
 }
 
-
 // Populate main table with cells
 for (let row = 0; row < ROWS; row++){
     let html_string = "<tr>";
     for (let col = 0; col < COLUMNS; col++){
-        html_string += "<td></td>";
+        html_string += "<td id="+(row*COLUMNS+col)+"></td>";
     }
     html_string += "</tr>";
     mainTbody.append(html_string);
 }
+
+// Add onClick for all cells
+$("#main-table tr").on("click", "td", function(){
+    $(this).toggleClass("wall-cell");
+});
+$("#main-table tr").on("mouseover", "td", function(){
+    if (isMouseDown){
+        if (this.classList.contains("wall-cell")){
+            $(this).removeClass("wall-cell");
+        } else {
+            $(this).addClass("wall-cell");
+        }    
+    }
+});
 
 // Temporarily set a permanent start and end cell
 $("#main-table tr td").first().toggleClass("start-cell")
 $("#main-table tr td").last().toggleClass("end-cell")
 
 // Add onClick events
-$("button").on("click", calculateAlgorithm);
+$("#btn-clear").on("click", clearCells);
+$("#btn-run").on("click", calculateAlgorithm);
 
