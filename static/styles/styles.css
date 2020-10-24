@@ -11,6 +11,7 @@ table{
     background-color: white;
     width: 20px;
     height: 20px;
+    border:1px solid lightgray;
 
     transition: background-color 0.1s;
 }

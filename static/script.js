@@ -2,13 +2,9 @@ let ROWS = 30;
 let COLUMNS = 30;
 let VISUALIZE_MS = 5;
 
-// Keep track on if mouse is down or up
+// Keep track on if mouse is down or up and current wall status when clicked
 let isMouseDown = false;
-$(document).mousedown(function() {
-    isMouseDown = true;
-}).mouseup(function() {
-    isMouseDown = false;  
-});
+let isWallActive = false;
 
 let mainTbody = $("#main-table");
 
@@ -80,35 +76,46 @@ function getTableInfo(){
     return data
 }
 
-// Populate main table with cells
-for (let row = 0; row < ROWS; row++){
-    let html_string = "<tr>";
-    for (let col = 0; col < COLUMNS; col++){
-        html_string += "<td id="+(row*COLUMNS+col)+"></td>";
+// Do this when DOM is ready
+$(function() {
+
+    // Populate main table with cells
+    for (let row = 0; row < ROWS; row++){
+        let html_string = "<tr>";
+        for (let col = 0; col < COLUMNS; col++){
+            html_string += "<td id="+(row*COLUMNS+col)+"></td>";
+        }
+        html_string += "</tr>";
+        mainTbody.append(html_string);
     }
-    html_string += "</tr>";
-    mainTbody.append(html_string);
-}
+    
+    // Add onClick for all cells
+    $("#main-table td")
+        .mousedown(function(){
+            isMouseDown = true;
+            $(this).toggleClass("wall-cell");
+            isWallActive = $(this).hasClass("wall-cell");
+            return false; // apperantly prevents text selection
+        })
+        .mouseover(function(){
+            if (isMouseDown){
+                $(this).toggleClass("wall-cell", isWallActive)
+            }
+        });
+    // Check if mouse is released
+    $(document).mouseup(function () {
+        isMouseDown = false;
+    });
+    
+    // Temporarily set a permanent start and end cell
+    $("#main-table tr td").first().toggleClass("start-cell")
+    $("#main-table tr td").last().toggleClass("end-cell")
+    
+    // Add onClick events
+    $("#btn-clear").on("click", function() {
+        clearCells(stepCell=true, wallCell=false)
+    });
+    $("#btn-run").on("click", calculateAlgorithm);
 
-// Add onClick for all cells
-$("#main-table tr").on("click", "td", function(){
-    $(this).toggleClass("wall-cell");
-});
-$("#main-table tr").on("mouseover", "td", function(){
-    if (isMouseDown){
-        if (this.classList.contains("wall-cell")){
-            $(this).removeClass("wall-cell");
-        } else {
-            $(this).addClass("wall-cell");
-        }    
-    }
-});
-
-// Temporarily set a permanent start and end cell
-$("#main-table tr td").first().toggleClass("start-cell")
-$("#main-table tr td").last().toggleClass("end-cell")
-
-// Add onClick events
-$("#btn-clear").on("click", clearCells);
-$("#btn-run").on("click", calculateAlgorithm);
+})
 
