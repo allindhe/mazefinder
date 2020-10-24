@@ -24,6 +24,10 @@ table{
 #main-table .step-cell{
     background-color: steelblue;
 }
+#main-table .current-step-cell{
+    transition: background-color 0s;
+    background-color: orchid;
+}
 #main-table .wall-cell{
     background-color: dimgrey;
 }
