@@ -106,11 +106,12 @@ def get_stuff(alg_type, data):
     data = json.loads(data)
 
     # Create board
-    print(data)
     board = Board(data["rows"], data["columns"], data["walls"]).get_board()
 
     # Run BFS with board
-    (solution, steps) = BFS().BFS(board, data["start-cell"], data["end-cell"])
+    print(alg_type)
+    if alg_type == "BFS":
+        (solution, steps) = BFS().BFS(board, data["start-cell"], data["end-cell"])
 
     print(solution)
     print(steps)

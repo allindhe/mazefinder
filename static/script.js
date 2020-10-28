@@ -1,6 +1,6 @@
 let ROWS = 30;
 let COLUMNS = 30;
-let VISUALIZE_MS = 50;
+let VISUALIZE_MS = 10;
 
 // Keep track on if mouse is down or up and current wall status when clicked
 let isMouseDown = false;
@@ -23,6 +23,7 @@ function visualizeCells(data) {
     let timeout = 0;
     let previous_cell = null;
     
+    // Search
     data["steps"].forEach(cell => {
         timeout += VISUALIZE_MS
         setTimeout(function(){
@@ -37,6 +38,17 @@ function visualizeCells(data) {
             previous_cell = mainTbody[0].rows[cell[0]].cells[cell[1]];
         }, timeout);
     });
+
+    // Solution
+    previous_cell = null;
+    data["solution"].forEach(cell => {
+        timeout += VISUALIZE_MS
+        setTimeout(function(){
+            // Set class on previous cell
+            previous_cell.classList.remove("step-cell");
+            previous_cell.classList.add("solution-cell");
+        }, timeout);
+    });
 }
 
 function calculateAlgorithm() {
@@ -44,7 +56,7 @@ function calculateAlgorithm() {
     let outputData;
 
     // Send board to backend and recieve solution
-    $.ajax('/_algorithm?data=' + JSON.stringify(inputData),
+    $.ajax('/_algorithm?data=' + JSON.stringify(inputData) + "&type=" + "BFS",
     {
         dataType: 'json', // type of response data
         timeout: 500,     // timeout milliseconds

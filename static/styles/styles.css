@@ -1,6 +1,12 @@
 body{
-    background-color: darkgray;
+    background-color: #181818;
 }
+
+h1{
+    color: white;
+    text-align: center;
+}
+
 
 table{
     margin: auto;
@@ -30,6 +36,9 @@ table{
 }
 #main-table .wall-cell{
     background-color: dimgrey;
+}
+#main-table .solution-cell{
+    background-color: chocolate;
 }
 
 #main-table td:hover{

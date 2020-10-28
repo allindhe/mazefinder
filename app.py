@@ -3,7 +3,7 @@ from pathfinding import get_stuff
 
 app = Flask(__name__)
 
-@app.route('/', methods=['POST', 'GET'])
+@app.route('/')
 def main_page():
 
     return render_template("landing.html")
@@ -17,7 +17,6 @@ def main_page_request():
     data = request.args.get('data')
     response = get_stuff(alg_type, data)
 
-    # temp
     return jsonify(response)
 
 
