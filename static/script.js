@@ -11,7 +11,7 @@ let mainTbody = $("#main-table");
 // Start stuff
 function clearCells(stepCell=true, wallCell=true){
     if (stepCell){
-        $("#main-table tr td").removeClass("step-cell").removeClass("current-step-cell")
+        $("#main-table tr td").removeClass("step-cell").removeClass("current-step-cell").removeClass("solution-cell")
     }
     if (wallCell){
         $("#main-table tr td").removeClass("wall-cell")
@@ -41,14 +41,16 @@ function visualizeCells(data) {
 
     // Solution
     previous_cell = null;
-    data["solution"].forEach(cell => {
-        timeout += VISUALIZE_MS
-        setTimeout(function(){
-            // Set class on previous cell
-            previous_cell.classList.remove("step-cell");
-            previous_cell.classList.add("solution-cell");
-        }, timeout);
-    });
+    if (data["solution"]){
+        data["solution"].forEach(cell => {
+            timeout += VISUALIZE_MS
+            setTimeout(function(){
+                // Set class on previous cell
+                mainTbody[0].rows[cell[0]].cells[cell[1]].classList.remove("step-cell");
+                mainTbody[0].rows[cell[0]].cells[cell[1]].classList.add("solution-cell");
+            }, timeout);
+        });
+    }
 }
 
 function calculateAlgorithm() {
@@ -56,7 +58,7 @@ function calculateAlgorithm() {
     let outputData;
 
     // Send board to backend and recieve solution
-    $.ajax('/_algorithm?data=' + JSON.stringify(inputData) + "&type=" + "BFS",
+    $.ajax('/_algorithm?data=' + JSON.stringify(inputData) + "&type=" + "Astar",
     {
         dataType: 'json', // type of response data
         timeout: 500,     // timeout milliseconds

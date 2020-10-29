@@ -73,13 +73,19 @@ class Board():
 
 
 ## ALGORITHMS
-class BFS():
+class AlgorithmBase():
     def __init__(self):
         self.evaluated_cells = []
 
     def cell_to_str(self, cell):
         return str(cell[0]) + ":" + str(cell[1])
+    
+    def str_to_cell(self, s):
+        cell = s.split(":")
+        return [int(cell[0]), int(cell[1])]
 
+class BFS(AlgorithmBase):
+    # Implemented from wikipedias pseudocode
     def BFS(self, board, start_cell, end_cell):
         Q = deque()
         discovered = {self.cell_to_str(start_cell)}
@@ -99,6 +105,87 @@ class BFS():
         
         return [], self.evaluated_cells
 
+class DFS(AlgorithmBase):
+    # Implemented from wikipedias pseudocode
+    def DFS(self, board, start_cell, end_cell):
+        S = deque()
+        discovered = {self.cell_to_str(start_cell)}
+        S.append(start_cell)
+
+        while S:
+            v = S.pop()
+            self.evaluated_cells.append(v)
+            
+            if v == end_cell:
+                return v, self.evaluated_cells
+            cell_str = board[v[0]][v[1]]
+            if cell_str not in discovered:
+                discovered.add(cell_str)
+                for neighbor in board[v[0]][v[1]].neighbors:
+                    S.append(neighbor)
+        
+        return [], self.evaluated_cells
+    
+class Astar(AlgorithmBase):
+    # Implemented from wikipedias pseudocode
+    def _h(self, cell):
+        # Minimum possible distance
+        return abs(self.end_cell[0] - cell[0]) + abs(self.end_cell[1] - cell[1])
+
+    @staticmethod
+    def _d(current, neighbor):
+        return abs(current[0] - neighbor[0] + current[1] - neighbor[1])
+
+    def _reconstruct_path(self, cameFrom, current_str):
+        total_path = deque([self.str_to_cell(current_str)])
+        while current_str in cameFrom:
+            current_str = cameFrom[current_str]
+            total_path.appendleft(self.str_to_cell(current_str))
+        return list(total_path)
+
+    def Astar(self, board, start_cell, end_cell, maxRows, maxColumns):
+        self.end_cell = end_cell
+        inf = 0xFFFFFFFF  # 32bit
+
+        start = self.cell_to_str(start_cell)
+        openSet = {start}
+
+        cameFrom = {}
+
+        # Create map with all cells as keys and infinity values
+        gScore = {self.cell_to_str([row, column]): inf for column in range(maxColumns) for row in range(maxRows)}
+        fScore = dict(gScore)
+        gScore[start] = 0
+        fScore[start] = self._h(start_cell)
+
+        while openSet:
+            # Get all fScores from open set
+            openSet_fScores = {key: fScore[key] for key in openSet}
+
+            # Get cell from open set with minimum fScore
+            current_str = min(openSet_fScores, key=fScore.get)
+            current = self.str_to_cell(current_str)
+            self.evaluated_cells.append(current)
+
+            # Check if goal is found
+            if current == end_cell:
+                return self._reconstruct_path(cameFrom, current_str), self.evaluated_cells
+
+            openSet.remove(current_str)
+            for neighbor in board[current[0]][current[1]].neighbors:
+                tentative_gScore = gScore[current_str] + self._d(current, neighbor)
+                neighbor_str = self.cell_to_str(neighbor)
+
+                if tentative_gScore < gScore[neighbor_str]:
+                    cameFrom[neighbor_str] = current_str
+                    gScore[neighbor_str] = tentative_gScore
+                    fScore[neighbor_str] = gScore[neighbor_str] + self._h(neighbor)
+
+                    if neighbor_str not in openSet:
+                        openSet.add(neighbor_str)
+        
+        # No solution found
+        return [], self.evaluated_cells
 
 ## INTERFACE
 def get_stuff(alg_type, data):
@@ -112,23 +199,27 @@ def get_stuff(alg_type, data):
     print(alg_type)
     if alg_type == "BFS":
         (solution, steps) = BFS().BFS(board, data["start-cell"], data["end-cell"])
+    elif alg_type == "DFS":
+        (solution, steps) = DFS().DFS(board, data["start-cell"], data["end-cell"])
+    elif alg_type == "Astar":
+        (solution, steps) = Astar().Astar(board, data["start-cell"], data["end-cell"], data["rows"], data["columns"])
 
-    print(solution)
-    print(steps)
     return {"solution": solution, "steps": steps}
 
 
 # Debug
 if __name__ == "__main__":
     start_cell = [0, 0]
-    end_cell = [29, 29]
-    rows = 30
-    columns = 30
-    walls = [[0, 5], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5]]
+    end_cell = [5, 5]
+    rows = 6
+    columns = 6
+    walls = [[1, 1], [1, 2], [1, 3], [1, 4], [1, 5]]
 
     board = Board(rows, columns, walls)
     print(board)
 
-    a, b = BFS().BFS(board.get_board(), start_cell, end_cell)
+    #a, b = BFS().BFS(board.get_board(), start_cell, end_cell)
+    a, b = Astar().Astar(board.get_board(), start_cell, end_cell, rows, columns)
+
     print(a)
-    print(b)
+    #print(b)
