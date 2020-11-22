@@ -1,5 +1,5 @@
-let ROWS = 30;
-let COLUMNS = 30;
+let ROWS = 31;  // Must be odd
+let COLUMNS = 31;  // Must be odd
 let VISUALIZE_MS = 10;
 
 // Keep track on if mouse is down or up and current wall status when clicked
@@ -129,8 +129,8 @@ $(function() {
     });
     
     // Temporarily set a permanent start and end cell
-    $("#main-table tr td").first().toggleClass("start-cell")
-    $("#main-table tr td").last().toggleClass("end-cell")
+    mainTbody[0].rows[1].cells[0].classList.add("start-cell")
+    mainTbody[0].rows[ROWS-1].cells[COLUMNS].classList.add("end-cell")
     
     // Add onClick events
     $("#btn-clear").on("click", function() {

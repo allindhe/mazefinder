@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, request
-from pathfinding import get_stuff
+from pathfinding import calculate_path
 
 app = Flask(__name__)
 
@@ -12,10 +12,10 @@ def main_page():
 
 @app.route('/_algorithm')
 def main_page_request():
-    print(request.query_string)
+    #print(request.query_string)
     alg_type = request.args.get('type')
     data = request.args.get('data')
-    response = get_stuff(alg_type, data)
+    response = calculate_path(alg_type, data)
 
     return jsonify(response)
 

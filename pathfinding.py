@@ -12,7 +12,8 @@ List with closest path (empty if no path is found)
 '''
 from collections import deque
 import json
-
+import math
+import random
 
 ## BOARD
 class Cell():
@@ -40,21 +41,33 @@ class Board():
         
         # Add walls
         for wall in walls:
-            print(self.board[wall[0]][wall[1]].row, self.board[wall[0]][wall[1]].column)
             self.board[wall[0]][wall[1]].isWall = True
 
         # Find neighbors
         for row in self.board:
             for cell in row:
-                if cell.row > 0 and not self.board[cell.row - 1][cell.column].isWall:
+                # Horizontal
+                if cell.row > 0 and not self.board[cell.row - 1][cell.column].isWall:  # Left
                     cell.neighbors.append([cell.row - 1, cell.column])
-                if cell.row < self.rows - 1 and not self.board[cell.row + 1][cell.column].isWall:
+                if cell.row < self.rows - 1 and not self.board[cell.row + 1][cell.column].isWall:  # Right
                     cell.neighbors.append([cell.row + 1, cell.column])
-                if cell.column > 0 and not self.board[cell.row][cell.column - 1].isWall:
+                if cell.column > 0 and not self.board[cell.row][cell.column - 1].isWall:  # Down
                     cell.neighbors.append([cell.row, cell.column - 1])
-                if cell.column < self.columns - 1 and not self.board[cell.row][cell.column + 1].isWall:
+                if cell.column < self.columns - 1 and not self.board[cell.row][cell.column + 1].isWall:  # Up
                     cell.neighbors.append([cell.row, cell.column + 1])
-        
+
+                # Diagonal (Inactive for now)
+                if False:
+                    if cell.row > 0 and cell.column > 0 and not self.board[cell.row - 1][cell.column - 1].isWall:  # Top left
+                        cell.neighbors.append([cell.row - 1, cell.column - 1])
+                    if cell.row < self.rows - 1 and cell.column > 0 and not self.board[cell.row + 1][cell.column - 1].isWall:  # Top right
+                        cell.neighbors.append([cell.row + 1, cell.column - 1])
+                    if cell.row > 0 and cell.column < self.columns - 1 and not self.board[cell.row - 1][cell.column + 1].isWall:  # Bottom left
+                        cell.neighbors.append([cell.row - 1, cell.column + 1])
+                    if cell.row < self.rows - 1 and cell.column < self.columns - 1 and not self.board[cell.row + 1][cell.column + 1].isWall:  # Bottom right
+                        cell.neighbors.append([cell.row + 1, cell.column + 1])
+
+
     def get_board(self):
         return self.board
 
@@ -71,8 +84,6 @@ class Board():
 
         return s
 
-
-## ALGORITHMS
 class AlgorithmBase():
     def __init__(self):
         self.evaluated_cells = []
@@ -84,6 +95,130 @@ class AlgorithmBase():
         cell = s.split(":")
         return [int(cell[0]), int(cell[1])]
 
+## MAZE GENERATION
+class EllersAlgorithm(AlgorithmBase):
+    """ Based on http://weblog.jamisbuck.org/2010/12/29/maze-generation-eller-s-algorithm.html """
+    def __init__(self, max_rows, max_columns):
+        self.max_rows = max_rows
+        self.max_columns = max_columns
+
+        # Create walls as input for creating board
+        walls = []
+        for row in range(self.max_rows):
+            for column in range(self.max_columns):
+                pass
+
+        self.board = 0
+
+        self.path_sets = {}
+        self.cell_in_set = {}
+        self.create_sets()
+
+        self.removed_walls = []
+
+    def create_sets(self):
+        """
+        Initialize sets.
+        path_sets includes all the path sets
+        {0: {0:0, 0:1}, 1: {1:0, 1:1, 2:0}}
+
+        cell_in_set can lookup in which set a cell is currently in
+        {"0:0": 0, "0:1": 0, "1:1": 1} etc..
+        """
+        idx = 0
+        for row in range(1, self.max_rows, 2):
+            for column in range(1, self.max_columns, 2):
+                cell_str = self.cell_to_str([row, column])
+                self.path_sets[idx] = {cell_str}
+                self.cell_in_set[cell_str] = idx
+                idx += 1
+
+    def is_in_same_set(self, left_cell, right_cell):
+        return right_cell in self.path_sets[self.cell_in_set[left_cell]]
+
+    def remove_wall_between_cells(self, first, second):
+        first_cell = self.str_to_cell(first)
+        second_cell = self.str_to_cell(second)
+        self.removed_walls.append([int((first_cell[0] + second_cell[0]) / 2),
+                                   int((first_cell[1] + second_cell[1]) / 2)])
+
+    def combine_two_sets(self, left_cell, right_cell):
+        """ If not in same set, remove the right cell set and merge it with the left cell set """
+        if not self.is_in_same_set(left_cell, right_cell):
+            removed_set = self.path_sets.pop(self.cell_in_set[right_cell], None)
+
+            cell_reference_set = self.cell_in_set[left_cell]
+            self.path_sets[cell_reference_set] = self.path_sets[cell_reference_set] | removed_set
+            for removed_cell in removed_set:
+                self.cell_in_set[removed_cell] = cell_reference_set
+
+            # Remove the wall between the two cells
+            self.remove_wall_between_cells(left_cell, right_cell)
+
+    def create_walls(self):
+        walls = []
+        for row in range(self.max_rows):
+            for column in range(self.max_columns):
+                if row % 2 == 0 or column % 2 == 0:
+                    if not [row, column] in self.removed_walls:
+                        walls.append([row, column])
+                
+        return walls
+
+    def generateMaze(self):
+        # Loop over every other row
+        for row in range(1, self.max_rows, 2):
+            # Loop over every other column except last one
+            for column in range(1, self.max_columns - 2, 2):
+                left_cell_str = self.cell_to_str([row, column])
+                right_cell_str = self.cell_to_str([row, column + 2])
+
+                # Roll the dice and see if we should combine set with right set
+                if random.random() >= 0.5:
+                    self.combine_two_sets(left_cell_str, right_cell_str)
+
+            # Check which sets are in the row
+            sets_in_row = set()
+            for column in range(1, self.max_columns, 2):
+                sets_in_row.add(self.cell_in_set[self.cell_to_str([row, column])])
+
+            # Create vertical connections, (all sets must have at least one connection)
+            sets_with_vertical_connections = set()
+            if row < self.max_rows - 2:
+                # Loop over every other column. This is gonna be fugly
+                for column in range(1, self.max_columns, 2):
+                    top_cell_str = self.cell_to_str([row, column])
+                    bottom_cell_str = self.cell_to_str([row + 2, column])
+                    current_set = self.cell_in_set[top_cell_str]
+
+                    if random.random() >= 0.5:
+                        self.combine_two_sets(top_cell_str, bottom_cell_str)
+                        sets_with_vertical_connections.add(current_set)
+
+                # If all sets don't have a vertical connection
+                for _ in range(1000):  # Instead of while
+                    for column in range(1, self.max_columns, 2):
+                        cell_str = self.cell_to_str([row, column])
+                        current_set = self.cell_in_set[cell_str]
+                        if current_set not in sets_with_vertical_connections:
+                            if random.random() >= 0.5:
+                                self.combine_two_sets(top_cell_str, bottom_cell_str)
+                                sets_with_vertical_connections.add(current_set)
+
+                    if len(sets_in_row) <= len(sets_with_vertical_connections):
+                        break
+            else:  # Last row
+                # Join all disjoint sets
+                for column in range(1, self.max_columns - 2, 2):
+                    left_cell_str = self.cell_to_str([row, column])
+                    right_cell_str = self.cell_to_str([row, column + 2])
+                    self.combine_two_sets(left_cell_str, right_cell_str)
+
+        walls = self.create_walls()
+        return walls
+
+
+## SEARCH ALGORITHMS
 class BFS(AlgorithmBase):
     # Implemented from wikipedias pseudocode
     def BFS(self, board, start_cell, end_cell):
@@ -130,11 +265,11 @@ class Astar(AlgorithmBase):
     # Implemented from wikipedias pseudocode
     def _h(self, cell):
         # Minimum possible distance
-        return abs(self.end_cell[0] - cell[0]) + abs(self.end_cell[1] - cell[1])
+        return self._d(self.end_cell, cell)
 
     @staticmethod
     def _d(current, neighbor):
-        return abs(current[0] - neighbor[0] + current[1] - neighbor[1])
+        return math.sqrt((current[0] - neighbor[0])**2 + (current[1] - neighbor[1])**2)
 
     def _reconstruct_path(self, cameFrom, current_str):
         total_path = deque([self.str_to_cell(current_str)])
@@ -188,7 +323,7 @@ class Astar(AlgorithmBase):
         return [], self.evaluated_cells
 
 ## INTERFACE
-def get_stuff(alg_type, data):
+def calculate_path(alg_type, data):
     # Convert data to dict
     data = json.loads(data)
 
@@ -196,7 +331,6 @@ def get_stuff(alg_type, data):
     board = Board(data["rows"], data["columns"], data["walls"]).get_board()
 
     # Run BFS with board
-    print(alg_type)
     if alg_type == "BFS":
         (solution, steps) = BFS().BFS(board, data["start-cell"], data["end-cell"])
     elif alg_type == "DFS":
@@ -211,15 +345,18 @@ def get_stuff(alg_type, data):
 if __name__ == "__main__":
     start_cell = [0, 0]
     end_cell = [5, 5]
-    rows = 6
-    columns = 6
+    rows = 29
+    columns = 29
     walls = [[1, 1], [1, 2], [1, 3], [1, 4], [1, 5]]
 
+    #board = Board(rows, columns, walls)
+    #print(board)
+
+    #a, b = BFS().BFS(board.get_board(), start_cell, end_cell)
+    #a, b = Astar().Astar(board.get_board(), start_cell, end_cell, rows, columns)
+    walls = EllersAlgorithm(rows, columns).generateMaze()
     board = Board(rows, columns, walls)
     print(board)
 
-    #a, b = BFS().BFS(board.get_board(), start_cell, end_cell)
-    a, b = Astar().Astar(board.get_board(), start_cell, end_cell, rows, columns)
-
-    print(a)
+    #print(a)
     #print(b)
