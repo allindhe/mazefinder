@@ -1,5 +1,5 @@
-let ROWS = 31;  // Must be odd
-let COLUMNS = 31;  // Must be odd
+let ROWS = 37;  // Must be odd
+let COLUMNS = 37;  // Must be odd
 let VISUALIZE_MS = 10;
 
 // Keep track on if mouse is down or up and current wall status when clicked
@@ -17,6 +17,7 @@ function clearCells(stepCell=true, wallCell=true){
         $("#main-table tr td").removeClass("wall-cell")
     }
 }
+
 function visualizeCells(data) {
     clearCells(stepCell=true, wallCell=false);
 
@@ -53,6 +54,15 @@ function visualizeCells(data) {
     }
 }
 
+function buildMaze(data) {
+    clearCells();
+    data["walls"].forEach(cell => {
+        if (mainTbody[0].rows[cell[0]].cells[cell[1]].classList.length == 0) {
+            mainTbody[0].rows[cell[0]].cells[cell[1]].classList.add("wall-cell");
+        }
+    });
+}
+
 function calculateAlgorithm() {
     let inputData = getTableInfo();
     let outputData;
@@ -66,7 +76,25 @@ function calculateAlgorithm() {
             visualizeCells(outputData);
         },
         error: function (jqXhr, textStatus, errorMessage) { // error callback 
-            $('p').append('Error: ' + errorMessage);
+            console.log('Error: ' + errorMessage);
+        }
+    });
+}
+function generateMaze() {
+    let inputData = {"rows": ROWS,
+                     "columns": COLUMNS};
+    let outputData;
+
+    // Send board to backend and recieve solution
+    $.ajax('/_maze?data=' + JSON.stringify(inputData) + "&type=" + "Ellers",
+    {
+        dataType: 'json', // type of response data
+        timeout: 500,     // timeout milliseconds
+        success: function (outputData,status,xhr) {   // success callback function
+            buildMaze(outputData);
+        },
+        error: function (jqXhr, textStatus, errorMessage) { // error callback 
+            console.log('Error: ' + errorMessage);
         }
     });
 }
@@ -130,13 +158,14 @@ $(function() {
     
     // Temporarily set a permanent start and end cell
     mainTbody[0].rows[1].cells[0].classList.add("start-cell")
-    mainTbody[0].rows[ROWS-1].cells[COLUMNS].classList.add("end-cell")
+    mainTbody[0].rows[ROWS-2].cells[COLUMNS-1].classList.add("end-cell")
     
     // Add onClick events
     $("#btn-clear").on("click", function() {
         clearCells(stepCell=true, wallCell=false)
     });
     $("#btn-run").on("click", calculateAlgorithm);
+    $("#btn-maze").on("click", generateMaze);
 
 })
 

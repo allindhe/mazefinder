@@ -198,8 +198,9 @@ class EllersAlgorithm(AlgorithmBase):
                 # If all sets don't have a vertical connection
                 for _ in range(1000):  # Instead of while
                     for column in range(1, self.max_columns, 2):
-                        cell_str = self.cell_to_str([row, column])
-                        current_set = self.cell_in_set[cell_str]
+                        top_cell_str = self.cell_to_str([row, column])
+                        bottom_cell_str = self.cell_to_str([row + 2, column])
+                        current_set = self.cell_in_set[top_cell_str]
                         if current_set not in sets_with_vertical_connections:
                             if random.random() >= 0.5:
                                 self.combine_two_sets(top_cell_str, bottom_cell_str)
@@ -340,13 +341,22 @@ def calculate_path(alg_type, data):
 
     return {"solution": solution, "steps": steps}
 
+def calculate_maze(maze_type, data):
+    # Convert data to dict
+    data = json.loads(data)
+
+    # Generate walls with a maze algorithm
+    if maze_type == "Ellers":
+        walls = EllersAlgorithm(data["rows"], data["columns"]).generateMaze()
+
+    return {"walls": walls}
 
 # Debug
 if __name__ == "__main__":
     start_cell = [0, 0]
     end_cell = [5, 5]
-    rows = 29
-    columns = 29
+    rows = 9
+    columns = 9
     walls = [[1, 1], [1, 2], [1, 3], [1, 4], [1, 5]]
 
     #board = Board(rows, columns, walls)
@@ -357,6 +367,5 @@ if __name__ == "__main__":
     walls = EllersAlgorithm(rows, columns).generateMaze()
     board = Board(rows, columns, walls)
     print(board)
-
     #print(a)
     #print(b)
