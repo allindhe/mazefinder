@@ -3,25 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static',filename='styles/styles.css') }}">
     <link rel="shortcut icon" href="#" />
     <title>Cool!</title>
 </head>
 <body>
-    <div>
-        <h1>Hello</h1>
+    <div class="container main-area">
+        <div class="row justify-content-center">
+            <h1>Alex's maze visualizer</h1>
+        </div>
+
+        <div class="row">
+            <div class="col col-9">
+                <table cellpadding="0" cellspacing="0">
+                    <tbody id="main-table">
+                        
+                    </tbody>
+                </table>
+            </div>
+        
+            <div class="col col-3">
+                <div class="button-section">
+                    <div class="row">
+                        <h3>Generate maze</h3>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <button id="btn-maze" type="button" class="btn btn-primary" onclick="this.blur();">Eller's algo.</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="button-section">
+                    <div class="row">
+                        <h3>Clear</h3>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 justify-content-start">
+                            <button id="btn-clear-solution" type="button" class="btn btn-primary" onclick="this.blur();">Clear solution</button>
+                        </div>
+                        <div class="col-6">
+                            <button id="btn-clear-all" type="button" class="btn btn-primary" onclick="this.blur();">Clear all</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="button-section">
+                    <div class="row">
+                        <h3>Solve</h3>
+                    </div>
+                    <div class="row justify-content-start">
+                        <div class="col-6">
+                            <button id="btn-run" type="button" class="btn btn-primary" onclick="this.blur();">Solve!</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        <table cellpadding="0" cellspacing="0">
-            <tbody id="main-table">
-                
-            </tbody>
-        </table>
-    </div>
-    <button id="btn-clear">Clear</button>
-    <button id="btn-run">Run</button>
-    <button id="btn-maze">Maze</button>
+    
 </body>
 <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="{{ url_for('static',filename='script.js') }}"></script>
 </html>

@@ -161,8 +161,11 @@ $(function() {
     mainTbody[0].rows[ROWS-2].cells[COLUMNS-1].classList.add("end-cell")
     
     // Add onClick events
-    $("#btn-clear").on("click", function() {
+    $("#btn-clear-solution").on("click", function() {
         clearCells(stepCell=true, wallCell=false)
+    });
+    $("#btn-clear-all").on("click", function() {
+        clearCells(stepCell=true, wallCell=true)
     });
     $("#btn-run").on("click", calculateAlgorithm);
     $("#btn-maze").on("click", generateMaze);

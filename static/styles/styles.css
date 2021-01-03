@@ -2,14 +2,40 @@ body{
     background-color: #181818;
 }
 
-h1{
+h1, h3{
     color: white;
-    text-align: center;
 }
-
+h1{
+    text-align: center;
+    text-transform: capitalize;
+    padding-bottom: 20px;
+}
 
 table{
     margin: auto;
+}
+
+.button-section{
+    margin-bottom: 20px;
+}
+.button-section .row .col-6 {
+    padding: 0 1px;
+}
+
+.btn:focus{
+    outline: none;
+    box-shadow: none;
+}
+.btn-primary{
+    border-color: #ff6a3e;
+    background-color: transparent;
+    width: 100%;
+    padding: 0px;
+}
+
+.main-area{
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 20%);
 }
 
 /* Standard unmarked cell */
@@ -35,7 +61,7 @@ table{
     background-color: orchid;
 }
 #main-table .wall-cell{
-    background-color: dimgrey;
+    background-color: #151515;
 }
 #main-table .solution-cell{
     background-color: chocolate;
