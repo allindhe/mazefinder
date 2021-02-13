@@ -30,4 +30,4 @@ if __name__ == "__main__":
     # http://127.0.0.1:5000/
     # set FLASK_ENV=development
     # flask run
-    app.run(debug=True)
+    app.run(debug=False)
